@@ -1,5 +1,5 @@
 import re
-from app.core.constants import REJECTED_WORDS
+from app.core.config import settings
 from app.api.utils import extract_link_id, extract_year_from_link
 
 
@@ -55,7 +55,7 @@ def parse_events(soup) -> list:
             )
 
             # Filter out events with cancelled status
-            if any(rejected_word in location for rejected_word in REJECTED_WORDS):
+            if any(rejected_word in location for rejected_word in settings.REJECTED_WORDS):
                 continue
 
             # Extract type

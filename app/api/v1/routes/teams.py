@@ -10,39 +10,42 @@ from sqlalchemy.future import select
 from app.db.db import get_db
 from app.api.models import Event
 from app.core.config import settings
-from app.core.constants import LIVE_RESULTS_BASE_URL, LIVE_RESULTS_PATH, EVENT_NAME, EVENT_YEAR, EVENT_GROUP
 
-commandsRouter = APIRouter(prefix="/api", tags=["commands"])
+teamsRouter = APIRouter(prefix="/api", tags=["teams"])
 
-@commandsRouter.get(
-    "/commands",
-    summary="Get commands",
-    operation_id="get_commands",
+@teamsRouter.get(
+    "/teams",
+    summary="Get teams",
+    operation_id="get_teams",
     description=(
-        "Get commands from the specified event by parsing the live results page. "
-        "Finds the event 'Первенство России' with year 2025 and group 'v13', "
+        "Get teams from the specified event by parsing the live results page. "
+        "Finds the event 'Первенство России' with year 2025 and group 'Ю', "
         "then fetches and parses the live results page to extract team names."
     ),
     dependencies=[], # Depends(PermissionCheck())
 )
-async def get_commands(db: AsyncSession = Depends(get_db)):
+async def get_teams(db: AsyncSession = Depends(get_db)):
     # Find the event with name EVENT_NAME and year EVENT_YEAR in groups [EVENT_GROUP]
-    query = select(Event).where(Event.name == EVENT_NAME).where(Event.year == EVENT_YEAR)
+    query = select(Event).where(Event.name == settings.EVENT_NAME).where(Event.year == settings.EVENT_YEAR)
     result = await db.execute(query)
     events = result.scalars().all()
     
     # Filter events by group EVENT_GROUP
-    filtered_events = [event for event in events if EVENT_GROUP in event.groups]
+    filtered_events = [event for event in events if settings.EVENT_GROUP in event.groups]
+    # print(f"Filtered events by group '{settings.EVENT_GROUP}': {len(filtered_events)} events found")
+    # for idx, event in enumerate(filtered_events):
+    #     print(f"  Match {idx}: name='{event.name}', link='{event.link}', year='{event.year}', groups={event.groups}")
     
     if not filtered_events:
-        raise HTTPException(status_code=404, detail=f"Event '{EVENT_NAME}' with group '{EVENT_GROUP}' and year {EVENT_YEAR} not found")
+        raise HTTPException(status_code=404, detail=f"Event '{settings.EVENT_NAME}' with group '{settings.EVENT_GROUP}' and year {settings.EVENT_YEAR} not found")
     
     # Take the first matching event
     event = filtered_events[0]
     
     # Construct the URL for live results
-    url = f"{LIVE_RESULTS_BASE_URL}{event.link}/{LIVE_RESULTS_PATH}"
+    url = f"{settings.LIVE_RESULTS_BASE_URL}{event.link}/{settings.LIVE_RESULTS_PATH}"
     
+    # print(f"url: {url}")
     try:
         # Make GET request to the live results page
         response = requests.get(url, timeout=10)
@@ -52,12 +55,12 @@ async def get_commands(db: AsyncSession = Depends(get_db)):
         soup = BeautifulSoup(response.content, "html.parser")
         
         # Find all td elements with class "Команда" (Team)
-        team_elements = soup.find_all("td", class_="Команда")
+        team_elements = soup.find_all("td", class_="command")
         
-        # Extract text from each element
-        teams = [elem.get_text(strip=True) for elem in team_elements]
+        # Extract text from each element, create a set of unique teams, and sort alphabetically
+        teams = sorted(set(elem.get_text(strip=True) for elem in team_elements))
         
-        return {"teams": teams, "event": event.name}
+        return {"teams": teams, "event": event.name, "link": event.link}
         
     except requests.exceptions.RequestException as e:
         print(f"Network error fetching live results: {e}")

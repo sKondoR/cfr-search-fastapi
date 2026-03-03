@@ -20,6 +20,15 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     DATABASE_URL: str = None
     BASE_URL: str = "https://www.rusclimbing.ru/competitions/"
+    # Live results URL template for teams searching
+    LIVE_RESULTS_BASE_URL: str = "https://c-f-r.ru/live/"
+    LIVE_RESULTS_PATH: str = "l_q_f13.html"
+    # Event filter constants
+    EVENT_NAME: str  = "Всероссийские соревнования"
+    EVENT_YEAR: str  = "2026"
+    EVENT_GROUP: str  = "13-14"
+    # Words that should filter out events
+    REJECTED_WORDS: list = ["ОТМЕНЕНО", "ОТМЕНЕНЫ"]
     ORIGINS: list = ["*"]
 
 
@@ -36,3 +45,6 @@ class Config:
 
 
 settings = Settings()
+
+# https://c-f-r.ru/live/2602vrn/l_q_f13.html
+# https://c-f-r.ru/live/2603perm_perv/l_q_f13.html

@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.core.permissions import PermissionCheck
 from app.db.db import startup_event
 from app.api.v1.routes.events import eventsRouter
-from app.api.v1.routes.commands import commandsRouter
+from app.api.v1.routes.teams import teamsRouter
 from app.schemas.event import BaseResponse
 
 app = FastAPI(
@@ -29,7 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(eventsRouter)
-app.include_router(commandsRouter)
+app.include_router(teamsRouter)
 
 
 @app.get(
