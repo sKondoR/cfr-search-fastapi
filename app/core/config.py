@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     """
     PROJECT_NAME: str = "rusclimbing-search"
     VERSION: str = "1.0.0"
-    DATABASE_URL: str = None
+    DATABASE_URL: str
     BASE_URL: str = "https://www.rusclimbing.ru/competitions/"
     # Live results URL template for teams searching
     LIVE_RESULTS_BASE_URL: str = "https://c-f-r.ru/live/"
