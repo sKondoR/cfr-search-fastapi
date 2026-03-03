@@ -70,7 +70,6 @@ async def startup_event() -> None:
             CREATE TABLE IF NOT EXISTS events (
                 id SERIAL PRIMARY KEY,
                 date VARCHAR(255),
-                date VARCHAR(255),
                 link VARCHAR(255) UNIQUE,
                 name VARCHAR(255),
                 location VARCHAR(255),
@@ -80,5 +79,21 @@ async def startup_event() -> None:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
+        """))
+        await conn.commit()
+
+        await conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS team_cache (
+                id SERIAL PRIMARY KEY,
+                year VARCHAR(10) UNIQUE NOT NULL,
+                teams TEXT[] NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+        await conn.commit()
+
+        await conn.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_team_cache_year ON team_cache(year)
         """))
         await conn.commit()
