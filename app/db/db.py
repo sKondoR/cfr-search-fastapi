@@ -70,6 +70,7 @@ async def startup_event() -> None:
             CREATE TABLE IF NOT EXISTS events (
                 id SERIAL PRIMARY KEY,
                 date VARCHAR(255),
+                date VARCHAR(255),
                 link VARCHAR(255) UNIQUE,
                 name VARCHAR(255),
                 location VARCHAR(255),

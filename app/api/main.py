@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.permissions import PermissionCheck
-from app.api.db import startup_event
-from app.api.v1.routes.events import router
+from app.db.db import startup_event
+from app.api.v1.routes.events import eventsRouter
+from app.api.v1.routes.commands import commandsRouter
 from app.schemas.event import BaseResponse
 
 app = FastAPI(
@@ -27,7 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(eventsRouter)
+app.include_router(commandsRouter)
 
 
 @app.get(

@@ -66,8 +66,9 @@ class TestParseEvents(unittest.TestCase):
         self.assertEqual(len(result), 2)
 
         event = result[0]
-        self.assertEqual(event["date"], "04 - 07 марта 2021")
-        self.assertEqual(event["link"], "/competitions/2103voronezh_ch/")
+        self.assertEqual(event["date"], "04 - 07 марта")
+        self.assertEqual(event["year"], "2021")
+        self.assertEqual(event["link"], "2103voronezh_ch")
         self.assertEqual(event["name"], "Чемпионат России")
         self.assertEqual(event["location"], "Воронеж")
         self.assertEqual(event["type"], "С")
@@ -75,13 +76,31 @@ class TestParseEvents(unittest.TestCase):
         self.assertEqual(event["disciplines"], ["Б"])
 
         event2 = result[1]
-        self.assertEqual(event2["date"], "31 марта - 05 апреля 2024")
-        self.assertEqual(event2["link"], "/competitions/2403msk_vs1/")
+        self.assertEqual(event2["date"], "31 марта - 05 апреля")
+        self.assertEqual(event2["year"], "2024")
+        self.assertEqual(event2["link"], "2403msk_vs1")
         self.assertEqual(event2["name"], "Всероссийские соревнования")
         self.assertEqual(event2["location"], "Москва")
         self.assertEqual(event2["type"], "С")
         self.assertEqual(event2["groups"], ["Ю", "С"])
         self.assertEqual(event2["disciplines"], ["Т", "Эт"])
+        
+        # Test with link that doesn't contain year
+        html_no_year = """
+        <li class="table__item" data-accordion="element">
+            <a class="table__content calendar__link" data-accordion="content" href="/competitions/no_year/">
+                <p class="table__text calendar__date"><span>Даты проведения</span>01 января</p>
+                <p class="table__text calendar__name"><span>Название мероприятия</span>Тест</p>
+                <p class="table__text calendar__location"><span>Локация</span>Москва</p>
+                <p class="table__text calendar__type"><span>Тип</span>С</p>
+            </a>
+        </li>
+        """
+        soup_no_year = BeautifulSoup(html_no_year, "html.parser")
+        result_no_year = parse_events(soup_no_year)
+        self.assertEqual(len(result_no_year), 1)
+        self.assertEqual(result_no_year[0]["year"], "")
+        self.assertEqual(result_no_year[0]["link"], "no_year")
 
     if __name__ == "__main__":
         unittest.main()

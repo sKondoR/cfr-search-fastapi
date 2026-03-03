@@ -7,17 +7,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.api.db import get_db
+from app.db.db import get_db
 from app.api.models import Event
 from app.api.parser import parse_events
 from app.core.config import settings
 # from app.core.permissions import PermissionCheck
 from app.schemas.event import BaseResponse, EventFilter, EventResponse
 
-router = APIRouter(prefix="/api", tags=["events"])
+eventsRouter = APIRouter(prefix="/api", tags=["events"])
 
 
-@router.get(
+@eventsRouter.get(
     "/events",
     response_model=BaseResponse[List[EventResponse]],
     summary="Get events",
@@ -60,12 +60,13 @@ async def get_events(
     result = await db.execute(query)
     events = result.scalars().all()
 
-    # Convert Event objects to EventResponse
+    # Convert Event objects to EventResponse and sort by link
     event_responses = [EventResponse.model_validate(event.__dict__) for event in events]
+    event_responses.sort(key=lambda x: x.link)
     return BaseResponse(data=event_responses, success=True)
 
 
-@router.get(
+@eventsRouter.get(
     "/events/fetch",
     response_model=BaseResponse,
     summary="Fetch and save events",
@@ -156,6 +157,7 @@ async def fetch_and_save_events(
             try:
                 event = Event(
                     date=comp["date"],
+                    year=comp["year"],
                     link=comp["link"],
                     name=comp["name"],
                     location=comp["location"],
@@ -173,6 +175,8 @@ async def fetch_and_save_events(
         await db.commit()
         # await get_events(filter_, db)
         # Return the updated events list
+        # Sort events by link
+        new_events.sort(key=lambda x: x['link'])
         return BaseResponse(data=new_events, success=True, message=message )
     except Exception as e:
         print(f"Error in fetch_and_save_events: {e}")

@@ -15,6 +15,7 @@ class BaseResponse(BaseModel, Generic[T]):
 
 class EventBase(BaseModel):
     date: str
+    year: str | None = None
     link: str
     name: str
     location: str

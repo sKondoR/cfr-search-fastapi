@@ -1,4 +1,6 @@
 import re
+from app.core.constants import REJECTED_WORDS
+from app.api.utils import extract_link_id, extract_year_from_link
 
 
 def parse_events(soup) -> list:
@@ -32,6 +34,7 @@ def parse_events(soup) -> list:
 
             # Extract link
             href = link.get("href", "")
+            link_id = extract_link_id(href)
 
             # Extract name
             name_span = link.find("p", class_="table__text calendar__name")
@@ -50,6 +53,10 @@ def parse_events(soup) -> list:
                 if location_span
                 else ""
             )
+
+            # Filter out events with cancelled status
+            if any(rejected_word in location for rejected_word in REJECTED_WORDS):
+                continue
 
             # Extract type
             type_span = link.find("p", class_="table__text calendar__type")
@@ -82,18 +89,15 @@ def parse_events(soup) -> list:
                 )
                 disciplines = [d.strip() for d in disciplines_text.split(";")]
 
-            # Extract year from link
-            year_match = re.search(r"\d{2}", href)
-            if year_match:
-                year = "20" + year_match.group()
-                # Only add year if it's not already in the date
-                if not date.endswith(year):
-                    date = f"{date} {year}"
+            # Extract year from link (format: 2112kna -> year = `20` + first 2 digits)
+            year = extract_year_from_link(href)
+            print(f"DEBUG: parse_events - year extracted: {year}")
 
             events.append(
                 {
                     "date": date,
-                    "link": href,
+                    "year": year,
+                    "link": link_id,
                     "name": name,
                     "location": location,
                     "type": type_,
@@ -107,3 +111,4 @@ def parse_events(soup) -> list:
             continue
 
     return events
+

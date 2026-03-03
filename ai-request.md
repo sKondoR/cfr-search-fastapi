@@ -49,3 +49,6 @@ we should save all data to postgres db also deployed on vercel
 
 
 
+https://www.rusclimbing.ru/competitions/?year=2025&start=2025-01-01&end=2025-12-31&ranks%5B%5D=%D0%92%D1%81%D0%B5%D1%80%D0%BE%D1%81%D1%81%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B5&types%5B%5D=book_competition&groups%5B%5D=teenagers
+
+

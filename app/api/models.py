@@ -12,7 +12,8 @@ class Event(Base):
 
     Attributes:
         id: Primary key
-        date: Competition date
+        date: Competition date (without year)
+        year: Competition year (can be empty string if not found)
         link: Unique URL link to competition details
         name: Competition name
         location: Competition location
@@ -26,6 +27,7 @@ class Event(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     date = Column(String)
+    year = Column(String, nullable=True)
     link = Column(String, unique=True, index=True)
     name = Column(String)
     location = Column(String)
