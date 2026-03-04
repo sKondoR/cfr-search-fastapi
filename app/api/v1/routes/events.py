@@ -42,30 +42,34 @@ async def get_events(
     Returns:
         List of EventResponse objects matching the filter criteria
     """
-    query = select(Event)
-
-    if filter_.start or filter_.end:
-        # Parse date range and apply filters
-        start_date, end_date = parse_date_range(filter_.date or "", filter_.year or "")
-        if start_date:
-            query = query.where(Event.date >= start_date)
-        if end_date:
-            query = query.where(Event.date <= end_date)
-    if filter_.ranks:
-        # Note: ranks are not stored in the database, they are used for filtering at source
-        pass
-    if filter_.types:
-        query = query.where(Event.type.in_(filter_.types))
-    if filter_.groups:
-        query = query.where(Event.groups.overlap(filter_.groups))
-    if filter_.disciplines:
-        query = query.where(Event.disciplines.overlap(filter_.disciplines))
-
-    result = await db.execute(query)
+    # Get all events from database
+    result = await db.execute(select(Event))
     events = result.scalars().all()
 
+    # Apply filters to each event individually
+    filtered_events = []
+    for event in events:
+        if filter_.start or filter_.end:
+            # Parse date range and apply filters
+            start_date, end_date = parse_date_range(str(event.date), str(event.year))
+            
+            # Добавляем проверки на None
+            if start_date and filter_.start and start_date < filter_.start:
+                continue
+            if end_date and filter_.end and end_date > filter_.end:
+                continue
+        
+        if filter_.types and event.type not in filter_.types:
+            continue
+        if filter_.groups and not event.groups.intersection(filter_.groups):
+            continue
+        if filter_.disciplines and not event.disciplines.intersection(filter_.disciplines):
+            continue
+        
+        filtered_events.append(event)
+    
     # Convert Event objects to EventResponse and sort by link
-    event_responses = [EventResponse.model_validate(event.__dict__) for event in events]
+    event_responses = [EventResponse.model_validate(event.__dict__) for event in filtered_events]
     event_responses.sort(key=lambda x: x.link)
     return BaseResponse(data=event_responses, success=True)
 
