@@ -1,6 +1,6 @@
 import re
 from app.core.config import settings
-from app.api.utils import extract_link_id, extract_year_from_link, parse_date_range
+from app.utils.utils import extract_link_id, extract_year_from_link, parse_date_range
 
 
 def parse_events(soup) -> list:

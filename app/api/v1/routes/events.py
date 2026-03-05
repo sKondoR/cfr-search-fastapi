@@ -10,7 +10,7 @@ from sqlalchemy.future import select
 from app.db.db import get_db
 from app.db.models import Event
 from app.api.parser import parse_events
-from app.api.utils import parse_date_range
+from app.utils.utils import parse_date_range
 from app.core.config import settings
 # from app.core.permissions import PermissionCheck
 from app.schemas.event import BaseResponse, EventFilter, EventResponse

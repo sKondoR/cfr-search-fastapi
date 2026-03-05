@@ -1,7 +1,7 @@
 import unittest
 from bs4 import BeautifulSoup
 from app.api.parser import parse_events
-from app.api.utils import parse_date_range
+from app.utils.utils import parse_date_range
 
 
 class TestParseEvents(unittest.TestCase):
