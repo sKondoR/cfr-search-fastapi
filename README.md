@@ -18,7 +18,7 @@ https://cfr-search.vercel.app/docs
 ## Структура проекта
 
 ```
-rusclimbing-search/
+cfr-search/
 ├── app/
 │   ├── api/
 │   │   └── v1/
@@ -74,17 +74,20 @@ rusclimbing-search/
 ## Установка
 
 1. **Клонирование репозитория:**
+
    ```bash
    git clone <repository-url>
-   cd rusclimbing-search
+   cd cfr-search
    ```
 
 2. **Установка зависимостей:**
+
    ```bash
    pip install -e .
    ```
 
 3. **Настройка переменных окружения:**
+
    ```bash
    cp .env.example .env
    # Отредактируйте .env файл с вашими настройками

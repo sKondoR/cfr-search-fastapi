@@ -1,5 +1,5 @@
 {
-  "name": "rusclimbing-search",
+  "name": "cfr-search",
   "version": "1.0.0",
   "description": "API для поиска соревнований по скалолазанию",
   "main": "app/api/main.py",

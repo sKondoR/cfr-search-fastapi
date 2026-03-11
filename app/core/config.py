@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         ORIGINS: List of allowed CORS origins
     """
 
-    PROJECT_NAME: str = "rusclimbing-search"
+    PROJECT_NAME: str = "cfr-search"
     VERSION: str = "1.0.0"
     DATABASE_URL: str
     BASE_URL: str = "https://www.rusclimbing.ru/competitions/"

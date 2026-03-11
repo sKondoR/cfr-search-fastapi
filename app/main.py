@@ -60,7 +60,7 @@ async def root() -> dict:
     Returns:
         Welcome message with API version
     """
-    return {"message": "Welcome to RusClimbing API", "version": "1.0.0"}
+    return {"message": "Welcome to CFR Search API", "version": "1.0.0"}
 
 
 @app.get(
