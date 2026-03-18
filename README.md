@@ -57,47 +57,6 @@ cfr-search/
 │   └── main.py                 # Точка входа приложения
 ```
 
-## Зависимости
-
-- **Python** 3.10+
-- **FastAPI** 0.104.1 - веб-фреймворк
-- **Uvicorn** 0.24.0 - ASGI сервер
-- **SQLAlchemy** 2.0.23 - ORM
-- **Alembic** 1.13.0 - миграции базы данных
-- **Pydantic** 2.5.0 - валидация данных
-- **Pydantic-settings** 2.1.0 - настройка конфигурации
-- **asyncpg** 0.29.0 - асинхронный PostgreSQL драйвер
-- **beautifulsoup4** 4.12.2 - парсинг HTML
-- **requests** 2.31.0 - HTTP клиент
-- **python-dotenv** 1.0.0 - загрузка .env файлов
-
-## Установка
-
-1. **Клонирование репозитория:**
-
-   ```bash
-   git clone <repository-url>
-   cd cfr-search
-   ```
-
-2. **Установка зависимостей:**
-
-   ```bash
-   pip install -e .
-   ```
-
-3. **Настройка переменных окружения:**
-
-   ```bash
-   cp .env.example .env
-   # Отредактируйте .env файл с вашими настройками
-   ```
-
-4. **Инициализация базы данных:**
-   ```bash
-   alembic upgrade head
-   ```
-
 ## Запуск
 
 ### Локальный запуск
@@ -108,13 +67,6 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Или через Python
 python -m uvicorn app.main:app --reload
-```
-
-### Производственный запуск
-
-```bash
-# Без автоматической перезагрузки
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ### Доступ к API
@@ -257,9 +209,3 @@ pylint, ruff
 4. **Model Layer** ([`app/models/`](app/models/)) - ORM модели
 5. **Schema Layer** ([`app/schemas/`](app/schemas/)) - Pydantic схемы
 
-## Дополнительные ресурсы
-
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/en/20/)
-- [Alembic Documentation](https://alembic.sqlalchemy.org/)
-- [Vercel Documentation](https://vercel.com/docs)
