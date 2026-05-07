@@ -4,17 +4,24 @@ import traceback
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from app.core.db.session import get_session
 from app.schemas.event import BaseResponse, EventFilter, EventResponse
 from app.services.event_service import EventService
 
+class EventUpdate(BaseModel):
+    """Model for updating an event."""
+    link: str
+
 events_router = APIRouter(prefix="/api", tags=["events"])
+
 
 
 async def get_event_service(db=Depends(get_session)) -> EventService:
     """Dependency for EventService."""
     return EventService(db)
+
 
 
 @events_router.get(
@@ -72,6 +79,7 @@ async def fetch_events(
             f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
         )
         raise HTTPException(status_code=500, detail=error_detail) from e
+
 
 
 @events_router.get(
@@ -136,6 +144,60 @@ async def fetch_events_remote(
         )
 
         return BaseResponse(data=result, success=True, message=result["message"])
+    except Exception as e:
+        error_detail = (
+            f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        )
+        raise HTTPException(status_code=500, detail=error_detail) from e
+
+
+@events_router.patch(
+    "/events/{event_id}",
+    response_model=BaseResponse[EventResponse],
+    summary="Update event link",
+    operation_id="update_event_link",
+    description="Update the link field of an existing event.",
+)
+async def update_event_link(
+    event_id: int,
+    event_update: EventUpdate,
+    db: EventService = Depends(get_event_service),
+) -> BaseResponse[EventResponse]:
+    """
+    Update the link field of an existing event.
+
+    Args:
+        event_id: ID of the event to update
+        event_update: EventUpdate object with the new link
+        db: EventService instance
+
+    Returns:
+        BaseResponse with the updated EventResponse object
+
+    Raises:
+        HTTPException: If the event is not found or there's an error during update
+    """
+    try:
+        print(f"Updating event {event_id} with link {event_update.link}")
+        
+        # Update the event
+        updated_event = await db.update_event(event_id, link=event_update.link)
+        
+        if updated_event is None:
+            raise HTTPException(status_code=404, detail=f"Event with id {event_id} not found")
+        
+        # Convert to EventResponse
+        event_dict = updated_event.__dict__.copy()
+        if event_dict.get("startdate") == "":
+            event_dict["startdate"] = None
+        if event_dict.get("enddate") == "":
+            event_dict["enddate"] = None
+            
+        event_response = EventResponse.model_validate(event_dict)
+        
+        return BaseResponse(data=event_response, success=True, message="Event link updated successfully")
+    except HTTPException:
+        raise
     except Exception as e:
         error_detail = (
             f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"

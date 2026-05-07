@@ -123,3 +123,27 @@ class EventRepository:
             select(Event.link).where(Event.link.in_(batch_links))
         )
         return set(link[0] for link in result.fetchall())
+
+    async def update_event(self, event_id: int, **kwargs) -> Optional[Event]:
+        """
+        Update an existing event with new values.
+
+        Args:
+            event_id: ID of the event to update
+            **kwargs: Fields to update with their new values
+
+        Returns:
+            Updated Event object if found and updated, None otherwise
+        """
+        result = await self.db.execute(select(Event).where(Event.id == event_id))
+        event = result.scalar_one_or_none()
+        
+        if event is None:
+            return None
+            
+        # Update fields that are provided
+        for key, value in kwargs.items():
+            if hasattr(event, key):
+                setattr(event, key, value)
+        
+        return event

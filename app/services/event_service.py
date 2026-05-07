@@ -228,6 +228,7 @@ class EventService:
             "end": end,
         }
 
+
         def format_param(key: str, values: List[str]) -> dict:
             return {f"{key}[]": values}
 
@@ -236,39 +237,49 @@ class EventService:
         params.update(format_param("groups", groups))
         params.update(format_param("disciplines", disciplines))
 
+
         try:
             print(f"Making HTTP request to: {base_url}")
             print(f"Parameters: {params}")
 
+
             # Build URL manually to see what's being generated
+
 
             url_with_params = f"{base_url}?{urlencode(params, doseq=True)}"
             print(f"Full URL: {url_with_params}")
+
 
             # Check for invalid characters in URL
             if "?" in url_with_params and url_with_params.count("?") > 1:
                 print("ERROR: Multiple '?' in URL")
                 return []
 
+
             print("Sending HTTP request...")
             print(f"Python version: {__import__('sys').version}")
             print(f"requests version: {requests.__version__}")
 
+
             response = requests.get(url_with_params, timeout=10)
             print(f"Response status code: {response.status_code}")
+
 
             if response.status_code != 200:
                 print(f"Received status code {response.status_code}")
                 print(f"Response content (first 500 chars): {response.text[:500]}")
                 return []
 
+
             response.raise_for_status()
             print("Parsing HTML content...")
             soup = BeautifulSoup(response.content, "html.parser")
             events = parse_events(soup)
 
+
             print(f"Parsed {len(events)} events from HTML")
             return events
+
 
         except requests.exceptions.RequestException as e:
             print(f"Network error fetching events: {e}")
@@ -276,3 +287,23 @@ class EventService:
         except Exception as e:
             print(f"Error fetching events: {e}")
             return []
+
+    async def update_event(self, event_id: int, **kwargs) -> Optional[Event]:
+        """
+        Update an existing event with new values.
+
+        Args:
+            event_id: ID of the event to update
+            **kwargs: Fields to update with their new values
+
+        Returns:
+            Updated Event object if found and updated, None otherwise
+        """
+        event = await self.repository.update_event(event_id, **kwargs)
+        
+        if event is None:
+            return None
+            
+        await self.db.commit()
+        await self.db.refresh(event)
+        return event
