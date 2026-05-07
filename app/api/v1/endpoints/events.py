@@ -9,7 +9,7 @@ from app.core.db.session import get_session
 from app.schemas.event import BaseResponse, EventFilter, EventResponse
 from app.services.event_service import EventService
 
-eventsRouter = APIRouter(prefix="/api", tags=["events"])
+events_router = APIRouter(prefix="/api", tags=["events"])
 
 
 async def get_event_service(db=Depends(get_session)) -> EventService:
@@ -17,7 +17,7 @@ async def get_event_service(db=Depends(get_session)) -> EventService:
     return EventService(db)
 
 
-@eventsRouter.get(
+@events_router.get(
     "/events",
     response_model=BaseResponse[List[EventResponse]],
     summary="Get events",
@@ -71,10 +71,10 @@ async def fetch_events(
         error_detail = (
             f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
         )
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail=error_detail) from e
 
 
-@eventsRouter.get(
+@events_router.get(
     "/events/fetch",
     response_model=BaseResponse,
     summary="Fetch and save events",
@@ -140,4 +140,4 @@ async def fetch_events_remote(
         error_detail = (
             f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
         )
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail=error_detail) from e

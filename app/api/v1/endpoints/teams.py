@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db.session import get_session
 from app.services.team_service import TeamService
 
-teamsRouter = APIRouter(prefix="/api", tags=["teams"])
+teams_router = APIRouter(prefix="/api", tags=["teams"])
 
 
 async def get_team_service(db: AsyncSession = Depends(get_session)) -> TeamService:
@@ -14,7 +14,7 @@ async def get_team_service(db: AsyncSession = Depends(get_session)) -> TeamServi
     return TeamService(db)
 
 
-@teamsRouter.get(
+@teams_router.get(
     "/teams",
     summary="Get teams",
     operation_id="get_teams",
@@ -43,4 +43,6 @@ async def get_teams(
     try:
         return await db.get_teams()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get teams: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get teams: {str(e)}"
+        ) from e
