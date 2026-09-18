@@ -28,7 +28,13 @@ if "asyncpg" not in DATABASE_URL:
     )
 
 # Create engine
-engine = create_async_engine(DATABASE_URL, echo=True)
+# pool_pre_ping validates a pooled connection before reuse and pool_recycle
+# proactively drops connections older than 5 minutes, since Postgres providers
+# (Neon/Supabase/etc.) close idle connections server-side and a warm Vercel
+# serverless invocation can otherwise reuse a connection the DB already killed.
+engine = create_async_engine(
+    DATABASE_URL, echo=True, pool_pre_ping=True, pool_recycle=300
+)
 
 AsyncSessionLocal = sessionmaker(
     bind=engine, class_=AsyncSession, expire_on_commit=False
