@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     EVENT_NAME: str = "Всероссийские соревнования"
     EVENT_YEAR: str = "2026"
     EVENT_GROUP: str = "13-14"
-    # Words that should filter out events
-    REJECTED_WORDS: list = ["ОТМЕНЕНО", "ОТМЕНЕНЫ"]
+    # Words that should filter out events (matched case-insensitively as substrings)
+    REJECTED_WORDS: list = ["отмен"]
     ORIGINS: list = ["*"]
 
 

@@ -10,18 +10,19 @@ from app.core.db.session import get_session
 from app.schemas.event import BaseResponse, EventFilter, EventResponse
 from app.services.event_service import EventService
 
+
 class EventUpdate(BaseModel):
     """Model for updating an event."""
+
     link: str
 
-events_router = APIRouter(prefix="/api", tags=["events"])
 
+events_router = APIRouter(prefix="/api", tags=["events"])
 
 
 async def get_event_service(db=Depends(get_session)) -> EventService:
     """Dependency for EventService."""
     return EventService(db)
-
 
 
 @events_router.get(
@@ -79,7 +80,6 @@ async def fetch_events(
             f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
         )
         raise HTTPException(status_code=500, detail=error_detail) from e
-
 
 
 @events_router.get(
@@ -151,6 +151,47 @@ async def fetch_events_remote(
         raise HTTPException(status_code=500, detail=error_detail) from e
 
 
+# Disabled: unauthenticated bulk-delete with no permission check (see PermissionChecker
+# note in CLAUDE.md — it isn't wired into this router). Re-enable only after adding auth.
+# @events_router.delete(
+#     "/events/cancelled",
+#     response_model=BaseResponse,
+#     summary="Remove cancelled events",
+#     operation_id="remove_cancelled_events",
+#     description=(
+#         "Delete events from the database whose name or location indicates "
+#         "they were cancelled (matches REJECTED_WORDS, case-insensitively)."
+#     ),
+# )
+async def remove_cancelled_events(
+    db: EventService = Depends(get_event_service),
+) -> BaseResponse:
+    """
+    Delete cancelled events from the database.
+
+    Args:
+        db: EventService instance
+
+    Returns:
+        BaseResponse with the number of deleted events
+
+    Raises:
+        HTTPException: If there's an error during deletion
+    """
+    try:
+        result = await db.remove_cancelled_events()
+        return BaseResponse(
+            data=result,
+            success=True,
+            message=f"Removed {result['deleted_count']} cancelled events",
+        )
+    except Exception as e:
+        error_detail = (
+            f"Internal server error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        )
+        raise HTTPException(status_code=500, detail=error_detail) from e
+
+
 @events_router.patch(
     "/events/{event_id}",
     response_model=BaseResponse[EventResponse],
@@ -179,23 +220,27 @@ async def update_event_link(
     """
     try:
         print(f"Updating event {event_id} with link {event_update.link}")
-        
+
         # Update the event
         updated_event = await db.update_event(event_id, link=event_update.link)
-        
+
         if updated_event is None:
-            raise HTTPException(status_code=404, detail=f"Event with id {event_id} not found")
-        
+            raise HTTPException(
+                status_code=404, detail=f"Event with id {event_id} not found"
+            )
+
         # Convert to EventResponse
         event_dict = updated_event.__dict__.copy()
         if event_dict.get("startdate") == "":
             event_dict["startdate"] = None
         if event_dict.get("enddate") == "":
             event_dict["enddate"] = None
-            
+
         event_response = EventResponse.model_validate(event_dict)
-        
-        return BaseResponse(data=event_response, success=True, message="Event link updated successfully")
+
+        return BaseResponse(
+            data=event_response, success=True, message="Event link updated successfully"
+        )
     except HTTPException:
         raise
     except Exception as e:

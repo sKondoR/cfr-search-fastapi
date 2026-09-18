@@ -82,9 +82,11 @@ def parse_events(soup) -> list:
                 else ""
             )
 
-            # Filter out events with cancelled status
+            # Filter out events with cancelled status (case-insensitive, checked in name and location)
+            searchable_text = f"{name} {location}".lower()
             if any(
-                rejected_word in location for rejected_word in settings.REJECTED_WORDS
+                rejected_word.lower() in searchable_text
+                for rejected_word in settings.REJECTED_WORDS
             ):
                 continue
 

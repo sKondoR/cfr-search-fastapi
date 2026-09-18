@@ -300,10 +300,24 @@ class EventService:
             Updated Event object if found and updated, None otherwise
         """
         event = await self.repository.update_event(event_id, **kwargs)
-        
+
         if event is None:
             return None
-            
+
         await self.db.commit()
         await self.db.refresh(event)
         return event
+
+    async def remove_cancelled_events(self) -> dict:
+        """
+        Remove events from the database whose name or location indicates
+        they were cancelled (see settings.REJECTED_WORDS).
+
+        Returns:
+            Dictionary with the number of deleted events
+        """
+        deleted_count = await self.repository.delete_by_name_or_location_keywords(
+            settings.REJECTED_WORDS
+        )
+        await self.db.commit()
+        return {"deleted_count": deleted_count}

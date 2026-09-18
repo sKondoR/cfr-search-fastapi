@@ -1,7 +1,7 @@
 """Repository for Event data access operations."""
 
 from typing import List, Optional
-from sqlalchemy import select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event
@@ -145,5 +145,31 @@ class EventRepository:
         for key, value in kwargs.items():
             if hasattr(event, key):
                 setattr(event, key, value)
-        
+
         return event
+
+    async def delete_by_name_or_location_keywords(self, keywords: List[str]) -> int:
+        """
+        Delete events whose name or location contains any of the given keywords.
+
+        Matching is case-insensitive and keyword-substring based (e.g. "отмен"
+        matches "Отменено", "ОТМЕНЕНЫ", "отменена", etc).
+
+        Args:
+            keywords: List of substrings to match against name/location
+
+        Returns:
+            Number of deleted rows
+        """
+        if not keywords:
+            return 0
+
+        conditions = []
+        for keyword in keywords:
+            escaped = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            pattern = f"%{escaped}%"
+            conditions.append(Event.name.ilike(pattern, escape="\\"))
+            conditions.append(Event.location.ilike(pattern, escape="\\"))
+
+        result = await self.db.execute(delete(Event).where(or_(*conditions)))
+        return result.rowcount or 0

@@ -103,6 +103,49 @@ class TestParseEvents(unittest.TestCase):
         self.assertEqual(result_no_year[0]["year"], "")
         self.assertEqual(result_no_year[0]["link"], "no_year")
 
+    def test_parse_events_filters_cancelled_event_in_name(self):
+        """Event whose name contains a rejected word (e.g. ОТМЕНЕН) must not be returned."""
+        html_content = """
+        <li class="table__item" data-accordion="element">
+            <a class="table__content calendar__link" data-accordion="content" href="/competitions/2607bah/">
+                <p class="table__text calendar__date"><span>Даты проведения</span>15 - 20 июля</p>
+                <p class="table__text calendar__name"><span>Название мероприятия</span>Кубок Дружбы - ОТМЕНЕН</p>
+                <p class="table__text calendar__type"><span>Тип</span>С</p>
+                <p class="table__text calendar__location"><span>Локация</span>Крым</p>
+            </a>
+        </li>
+        <li class="table__item" data-accordion="element">
+            <a class="table__content calendar__link" data-accordion="content" href="/competitions/2103voronezh_ch/">
+                <p class="table__text calendar__date"><span>Даты проведения</span>04 - 07 марта</p>
+                <p class="table__text calendar__name"><span>Название мероприятия</span>Чемпионат России</p>
+                <p class="table__text calendar__type"><span>Тип</span>С</p>
+                <p class="table__text calendar__location"><span>Локация</span>Воронеж</p>
+            </a>
+        </li>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = parse_events(soup)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["link"], "2103voronezh_ch")
+
+    def test_parse_events_filters_cancelled_event_in_location_case_insensitive(self):
+        """Filtering must be case-insensitive and also apply to the location field."""
+        html_content = """
+        <li class="table__item" data-accordion="element">
+            <a class="table__content calendar__link" data-accordion="content" href="/competitions/2607bah/">
+                <p class="table__text calendar__date"><span>Даты проведения</span>15 - 20 июля</p>
+                <p class="table__text calendar__name"><span>Название мероприятия</span>Кубок Дружбы</p>
+                <p class="table__text calendar__type"><span>Тип</span>С</p>
+                <p class="table__text calendar__location"><span>Локация</span>отменено</p>
+            </a>
+        </li>
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+        result = parse_events(soup)
+
+        self.assertEqual(len(result), 0)
+
 
 class TestParseDateRange(unittest.TestCase):
     """
